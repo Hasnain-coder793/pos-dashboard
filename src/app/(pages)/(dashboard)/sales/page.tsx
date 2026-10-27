@@ -7,15 +7,16 @@ import { createClient } from "@/lib/supabase/server";
 import { salesFilterSchema, type ReportRow, type SaleRow } from "@/types";
 import { getDateRange, karachiToday } from "@/utils/date-range";
 import { formatDateTime, formatPKR } from "@/utils/format";
+import { PAGE_SIZE, pageRange, pageSchema } from "@/utils/pagination";
 
-const PAGE_SIZE = 25;
 const inputClass = "h-10 rounded-md border border-neutral-300 px-3 text-sm outline-none focus:border-primary";
 
 export default async function SalesPage({ searchParams }: PageProps<"/sales">) {
   await requireRole(Role.SUPER_ADMIN);
   const params = await searchParams;
   const { period, date } = salesFilterSchema.parse({ period: params.period, date: params.date });
-  const page = Math.max(1, Number(params.page) || 1);
+  const page = pageSchema.parse(params.page);
+  const reportPage = pageSchema.parse(params.reportPage);
   const { from, to } = getDateRange(period, date);
 
   const supabase = await createClient();
@@ -27,12 +28,13 @@ export default async function SalesPage({ searchParams }: PageProps<"/sales">) {
       .gte("sold_at", from)
       .lt("sold_at", to)
       .order("sold_at", { ascending: false })
-      .range((page - 1) * PAGE_SIZE, page * PAGE_SIZE - 1),
+      .range(...pageRange(page)),
   ]);
 
   const rows = (report ?? []) as ReportRow[];
   const totalQty = rows.reduce((sum, row) => sum + Number(row.qty_sold), 0);
   const totalAmount = rows.reduce((sum, row) => sum + Number(row.amount_pkr), 0);
+  const reportRows = rows.slice((reportPage - 1) * PAGE_SIZE, reportPage * PAGE_SIZE);
   const summary = [
     { label: "Orders", value: String(count ?? 0) },
     { label: "Items sold", value: String(totalQty) },
@@ -67,7 +69,7 @@ export default async function SalesPage({ searchParams }: PageProps<"/sales">) {
       </div>
 
       <Table headers={["Item", "Quantity sold", "Sales amount"]} empty={!rows.length}>
-        {rows.map((row) => (
+        {reportRows.map((row) => (
           <tr key={row.product_name}>
             <td className="font-semibold">{row.product_name}</td>
             <td>{row.qty_sold}</td>
@@ -80,6 +82,7 @@ export default async function SalesPage({ searchParams }: PageProps<"/sales">) {
           <td>{formatPKR(totalAmount)}</td>
         </tr>
       </Table>
+      <Pagination page={reportPage} total={rows.length} pageKey="reportPage" params={{ period, date, page: String(page) }} />
 
       <h2 className="text-lg font-bold">Sales in this {period}</h2>
       <Table headers={["Receipt", "Time", "Cashier", "Customer", "Items", "Total"]} empty={!sales?.length}>
@@ -94,7 +97,7 @@ export default async function SalesPage({ searchParams }: PageProps<"/sales">) {
           </tr>
         ))}
       </Table>
-      <Pagination page={page} total={count ?? 0} pageSize={PAGE_SIZE} params={{ period, date }} />
+      <Pagination page={page} total={count ?? 0} params={{ period, date, reportPage: String(reportPage) }} />
     </>
   );
 }

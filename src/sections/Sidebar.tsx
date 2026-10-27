@@ -19,7 +19,7 @@ export default function Sidebar({ profile }: SidebarProps) {
   const pathname = usePathname();
 
   return (
-    <aside className="flex w-full flex-col gap-6 bg-primary p-4 text-secondary md:min-h-screen md:w-60">
+    <aside className="flex w-full flex-col gap-6 bg-primary p-4 text-secondary md:fixed md:inset-y-0 md:left-0 md:w-60 md:overflow-y-auto">
       <div>
         <p className="text-lg font-bold">POS Dashboard</p>
         <p className="text-sm text-neutral-400">

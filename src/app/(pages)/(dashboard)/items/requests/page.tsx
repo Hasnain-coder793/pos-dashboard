@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Badge from "@/components/Badge";
+import Pagination from "@/components/Pagination";
 import Table from "@/components/Table";
 import { RequestStatus, RequestType, Role } from "@/enums";
 import { requireRole } from "@/lib/auth";
@@ -9,6 +10,7 @@ import RequestActions from "@/sections/RequestActions";
 import type { ItemRequest } from "@/types";
 import { cn } from "@/utils/cn";
 import { formatDateTime, formatPKR } from "@/utils/format";
+import { pageRange, pageSchema } from "@/utils/pagination";
 
 const statuses = Object.values(RequestStatus);
 
@@ -25,21 +27,24 @@ function changes(request: ItemRequest) {
 
 export default async function RequestsPage({ searchParams }: PageProps<"/items/requests">) {
   const profile = await requireRole(Role.SUPER_ADMIN, Role.ADMIN);
-  const { status: param } = await searchParams;
+  const { status: param, page: pageParam } = await searchParams;
+  const page = pageSchema.parse(pageParam);
   const status = statuses.find((s) => s === param) ?? RequestStatus.PENDING;
   const canDecide = profile.role === Role.SUPER_ADMIN;
 
   const supabase = await createClient();
-  const { data } = await supabase
+  const { data, count } = await supabase
     .from("product_deletion_requests")
     .select(
       `id, request_type, status, reason, new_name, new_price_pkr, new_image_url, decision_note, created_at, decided_at,
        product:products(name, price_pkr, image_url),
        requester:profiles!product_deletion_requests_requested_by_fkey(full_name),
        decider:profiles!product_deletion_requests_decided_by_fkey(full_name)`,
+      { count: "exact" },
     )
     .eq("status", status)
     .order("created_at", { ascending: false })
+    .range(...pageRange(page))
     .returns<ItemRequest[]>();
   const requests = data ?? [];
 
@@ -105,6 +110,7 @@ export default async function RequestsPage({ searchParams }: PageProps<"/items/r
           </tr>
         ))}
       </Table>
+      <Pagination page={page} total={count ?? 0} params={{ status }} />
     </>
   );
 }

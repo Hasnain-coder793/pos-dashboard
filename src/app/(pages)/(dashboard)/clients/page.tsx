@@ -8,8 +8,8 @@ import { createClient } from "@/lib/supabase/server";
 import { searchSchema, type Client } from "@/types";
 import { getDateRange, karachiToday } from "@/utils/date-range";
 import { formatDateTime, formatPKR } from "@/utils/format";
+import { pageRange, pageSchema } from "@/utils/pagination";
 
-const PAGE_SIZE = 25;
 
 const periods = [
   { value: "", label: "All" },
@@ -22,7 +22,7 @@ export default async function ClientsPage({ searchParams }: PageProps<"/clients"
   await requireRole(Role.SUPER_ADMIN);
   const params = await searchParams;
   const q = searchSchema.parse(params.q).replace(/[,()]/g, "");
-  const page = Math.max(1, Number(params.page) || 1);
+  const page = pageSchema.parse(params.page);
   const period = periods.find((p) => p.value && p.value === params.period)?.value as SalesPeriod | undefined;
 
   const supabase = await createClient();
@@ -30,7 +30,7 @@ export default async function ClientsPage({ searchParams }: PageProps<"/clients"
     .from("client_summary")
     .select("*", { count: "exact" })
     .order("last_purchase_at", { ascending: false })
-    .range((page - 1) * PAGE_SIZE, page * PAGE_SIZE - 1);
+    .range(...pageRange(page));
   if (q) query = query.or(`customer_name.ilike.%${q}%,customer_phone.ilike.%${q}%`);
   // Bought in the period = last purchase on or after the period start (Karachi time)
   if (period) query = query.gte("last_purchase_at", getDateRange(period, karachiToday()).from);
@@ -64,7 +64,7 @@ export default async function ClientsPage({ searchParams }: PageProps<"/clients"
           </tr>
         ))}
       </Table>
-      <Pagination page={page} total={count ?? 0} pageSize={PAGE_SIZE} params={{ q, period: period ?? "" }} />
+      <Pagination page={page} total={count ?? 0} params={{ q, period: period ?? "" }} />
     </>
   );
 }

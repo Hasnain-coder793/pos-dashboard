@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "create-super-admin": "node --env-file=.env.local scripts/create-super-admin.mjs"
+    "create-super-admin": "node --env-file=.env.local scripts/create-super-admin.mjs",
+    "seed-sales": "node --env-file=.env.local scripts/seed-sales.mjs",
+    "unseed-sales": "node --env-file=.env.local scripts/unseed-sales.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^6.0.0",

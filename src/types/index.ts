@@ -167,7 +167,7 @@ export type ModalProps = { title: string; onClose: () => void; children: ReactNo
 
 export type TableProps = { headers: string[]; children: ReactNode; empty?: boolean };
 
-export type PaginationProps = { page: number; total: number; pageSize: number; params: Record<string, string> };
+export type PaginationProps = { page: number; total: number; params?: Record<string, string>; pageKey?: string };
 
 export type NavLink = { href: string; label: string; icon: LucideIcon; roles: Role[] };
 
