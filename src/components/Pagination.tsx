@@ -6,8 +6,8 @@ import { cn } from "@/utils/cn";
 import { PAGE_SIZE } from "@/utils/pagination";
 
 // pageKey lets two lists on one page keep separate page numbers in the URL
-export default function Pagination({ page, total, params = {}, pageKey = "page" }: PaginationProps) {
-  const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+export default function Pagination({ page, total, params = {}, pageKey = "page", pageSize = PAGE_SIZE }: PaginationProps) {
+  const pages = Math.max(1, Math.ceil(total / pageSize));
   const href = (p: number) => `?${new URLSearchParams({ ...params, [pageKey]: String(p) })}`;
 
   // A page past the end (typed into the URL) goes to the last page

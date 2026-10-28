@@ -54,7 +54,7 @@ export default function UsersTable({ users }: UsersTableProps) {
             <td className="font-semibold">{user.full_name}</td>
             <td>{user.email}</td>
             <td>{roleLabels[user.role]}</td>
-            <td>{user.can_sell || user.role !== Role.ADMIN ? "Yes" : "No"}</td>
+            <td>{user.is_active && (user.can_sell || user.role !== Role.ADMIN) ? "Yes" : "No"}</td>
             <td>
               <Badge variant={user.is_active ? "solid" : "outline"}>{user.is_active ? "Active" : "Inactive"}</Badge>
             </td>

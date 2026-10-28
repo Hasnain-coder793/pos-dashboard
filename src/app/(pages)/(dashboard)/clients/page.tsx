@@ -10,6 +10,7 @@ import { getDateRange, karachiToday } from "@/utils/date-range";
 import { formatDateTime, formatPKR } from "@/utils/format";
 import { pageRange, pageSchema } from "@/utils/pagination";
 
+const CLIENTS_PAGE_SIZE = 25;
 
 const periods = [
   { value: "", label: "All" },
@@ -30,7 +31,7 @@ export default async function ClientsPage({ searchParams }: PageProps<"/clients"
     .from("client_summary")
     .select("*", { count: "exact" })
     .order("last_purchase_at", { ascending: false })
-    .range(...pageRange(page));
+    .range(...pageRange(page, CLIENTS_PAGE_SIZE));
   if (q) query = query.or(`customer_name.ilike.%${q}%,customer_phone.ilike.%${q}%`);
   // Bought in the period = last purchase on or after the period start (Karachi time)
   if (period) query = query.gte("last_purchase_at", getDateRange(period, karachiToday()).from);
@@ -64,7 +65,7 @@ export default async function ClientsPage({ searchParams }: PageProps<"/clients"
           </tr>
         ))}
       </Table>
-      <Pagination page={page} total={count ?? 0} params={{ q, period: period ?? "" }} />
+      <Pagination page={page} total={count ?? 0} params={{ q, period: period ?? "" }} pageSize={CLIENTS_PAGE_SIZE} />
     </>
   );
 }

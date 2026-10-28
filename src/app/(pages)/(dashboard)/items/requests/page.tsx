@@ -14,10 +14,10 @@ import { pageRange, pageSchema } from "@/utils/pagination";
 
 const statuses = Object.values(RequestStatus);
 
-// "Current → requested" lines for each field the request changes
+// "Old → requested" lines for each field the request changes; old values come from the snapshot taken at request time
 function changes(request: ItemRequest) {
   if (request.request_type === RequestType.DELETE) return ["Remove from POS"];
-  const { product } = request;
+  const product = request.old_values ?? request.product;
   return [
     request.new_name && `Name: ${product?.name} → ${request.new_name}`,
     request.new_price_pkr && `Price: ${formatPKR(product?.price_pkr ?? 0)} → ${formatPKR(request.new_price_pkr)}`,
@@ -36,7 +36,7 @@ export default async function RequestsPage({ searchParams }: PageProps<"/items/r
   const { data, count } = await supabase
     .from("product_deletion_requests")
     .select(
-      `id, request_type, status, reason, new_name, new_price_pkr, new_image_url, decision_note, created_at, decided_at,
+      `id, request_type, status, reason, new_name, new_price_pkr, new_image_url, decision_note, old_values, created_at, decided_at,
        product:products(name, price_pkr, image_url),
        requester:profiles!product_deletion_requests_requested_by_fkey(full_name),
        decider:profiles!product_deletion_requests_decided_by_fkey(full_name)`,

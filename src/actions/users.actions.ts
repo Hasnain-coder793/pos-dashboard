@@ -29,12 +29,16 @@ export async function createUser(values: CreateUserValues): Promise<ActionResult
   const { data, error } = await admin.auth.admin.createUser({ email, password, email_confirm: true, user_metadata: { full_name } });
   if (error) return { ok: false, error: error.message };
 
-  // handle_new_user already created the profile; set the role on it
+  // handle_new_user already created the (inactive) profile; set the role and activate it
   const { error: profileError } = await admin
     .from("profiles")
-    .update({ role, can_sell: role === Role.ADMIN && can_sell })
+    .update({ role, can_sell: role === Role.ADMIN && can_sell, is_active: true })
     .eq("id", data.user.id);
-  if (profileError) return { ok: false, error: toErrorMessage(profileError) };
+  if (profileError) {
+    // don't leave a half-created account behind
+    await admin.auth.admin.deleteUser(data.user.id);
+    return { ok: false, error: toErrorMessage(profileError) };
+  }
 
   revalidatePath("/users");
   return { ok: true };
@@ -55,6 +59,8 @@ export async function deleteUser(id: string): Promise<ActionResult> {
   return { ok: true };
 }
 
+const banDuration = (isActive: boolean) => (isActive ? "none" : "876000h");
+
 // Saved through the user's session, so RLS manage_users applies. Deactivating also bans the auth user.
 export async function updateUser(id: string, values: UpdateUserValues): Promise<ActionResult> {
   const parsed = updateUserSchema.safeParse(values);
@@ -62,18 +68,23 @@ export async function updateUser(id: string, values: UpdateUserValues): Promise<
   if (!(await isSuperAdmin())) return denied;
 
   const supabase = await createClient();
-  const { data: target } = await supabase.from("profiles").select("role").eq("id", id).single();
+  const { data: target } = await supabase.from("profiles").select("role, is_active").eq("id", id).single();
   if (!target || target.role === Role.SUPER_ADMIN) return { ok: false, error: "Super Admin accounts cannot be changed here" };
 
+  // Ban first so a failed ban never leaves the profile changed; undo the ban if the profile save fails
   const { full_name, role, can_sell, is_active } = parsed.data;
+  const admin = createAdminClient();
+  const { error: banError } = await admin.auth.admin.updateUserById(id, { ban_duration: banDuration(is_active) });
+  if (banError) return { ok: false, error: "Could not update sign-in access. Please try again." };
+
   const { error } = await supabase
     .from("profiles")
     .update({ full_name, role, can_sell: role === Role.ADMIN && can_sell, is_active })
     .eq("id", id);
-  if (error) return { ok: false, error: toErrorMessage(error) };
-
-  const { error: banError } = await createAdminClient().auth.admin.updateUserById(id, { ban_duration: is_active ? "none" : "876000h" });
-  if (banError) return { ok: false, error: banError.message };
+  if (error) {
+    await admin.auth.admin.updateUserById(id, { ban_duration: banDuration(target.is_active) });
+    return { ok: false, error: toErrorMessage(error) };
+  }
 
   revalidatePath("/users");
   return { ok: true };

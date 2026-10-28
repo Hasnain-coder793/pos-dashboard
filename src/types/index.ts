@@ -48,7 +48,11 @@ export const itemSchema = z.object({
   name: z.string().trim().min(2, "At least 2 characters").max(60, "Max 60 characters"),
   price_pkr: z.number("Enter a price").int("Whole PKR only").min(1, "Min 1").max(100000, "Max 100,000"),
   is_active: z.boolean(),
-  image_url: z.url().nullable(),
+  // Only files from our own product-images bucket
+  image_url: z
+    .url()
+    .refine((url) => url.startsWith(`${process.env.NEXT_PUBLIC_SUPABASE_URL?.replace(/\/$/, "")}/storage/v1/object/public/product-images/`), "Upload the image again")
+    .nullable(),
   reason: reasonField(false),
 });
 
@@ -82,6 +86,7 @@ export type ItemRequest = {
   new_price_pkr: number | null;
   new_image_url: string | null;
   decision_note: string | null;
+  old_values: Pick<Product, "name" | "price_pkr" | "image_url"> | null;
   created_at: string;
   decided_at: string | null;
   product: Pick<Product, "name" | "price_pkr" | "image_url"> | null;
@@ -167,7 +172,7 @@ export type ModalProps = { title: string; onClose: () => void; children: ReactNo
 
 export type TableProps = { headers: string[]; children: ReactNode; empty?: boolean };
 
-export type PaginationProps = { page: number; total: number; params?: Record<string, string>; pageKey?: string };
+export type PaginationProps = { page: number; total: number; params?: Record<string, string>; pageKey?: string; pageSize?: number };
 
 export type NavLink = { href: string; label: string; icon: LucideIcon; roles: Role[] };
 

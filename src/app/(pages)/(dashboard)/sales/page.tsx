@@ -55,7 +55,7 @@ export default async function SalesPage({ searchParams }: PageProps<"/sales">) {
         </select>
         <input type="date" name="date" defaultValue={date} max={karachiToday()} className={inputClass} />
         <Button type="submit" variant="secondary">
-          Show
+          Search
         </Button>
       </form>
 
