@@ -14,10 +14,10 @@ import { pageRange, pageSchema } from "@/utils/pagination";
 
 const statuses = Object.values(RequestStatus);
 
-// "Current → requested" lines for each field the request changes
+// "Old → requested" lines for each field the request changes; old values come from the snapshot taken at request time
 function changes(request: ItemRequest) {
   if (request.request_type === RequestType.DELETE) return ["Remove from POS"];
-  const { product } = request;
+  const product = request.old_values ?? request.product;
   return [
     request.new_name && `Name: ${product?.name} → ${request.new_name}`,
     request.new_price_pkr && `Price: ${formatPKR(product?.price_pkr ?? 0)} → ${formatPKR(request.new_price_pkr)}`,
@@ -36,7 +36,7 @@ export default async function RequestsPage({ searchParams }: PageProps<"/items/r
   const { data, count } = await supabase
     .from("product_deletion_requests")
     .select(
-      `id, request_type, status, reason, new_name, new_price_pkr, new_image_url, decision_note, created_at, decided_at,
+      `id, request_type, status, reason, new_name, new_price_pkr, new_image_url, decision_note, old_values, created_at, decided_at,
        product:products(name, price_pkr, image_url),
        requester:profiles!product_deletion_requests_requested_by_fkey(full_name),
        decider:profiles!product_deletion_requests_decided_by_fkey(full_name)`,
@@ -58,7 +58,7 @@ export default async function RequestsPage({ searchParams }: PageProps<"/items/r
           <Link
             key={s}
             href={`?status=${s}`}
-            className={cn("rounded-full border border-primary px-3 py-1 text-sm font-semibold capitalize hover:bg-neutral-100", s === status && "bg-primary text-secondary hover:bg-neutral-800")}
+            className={cn("rounded-full border border-primary px-3 py-1 text-sm font-semibold capitalize text-primary hover:bg-blue-50", s === status && "bg-primary text-secondary hover:bg-blue-800")}
           >
             {s}
           </Link>
@@ -89,7 +89,7 @@ export default async function RequestsPage({ searchParams }: PageProps<"/items/r
             <td className="max-w-xs">{request.reason}</td>
             <td className="whitespace-nowrap">
               <p>{request.requester?.full_name ?? "—"}</p>
-              <p className="text-neutral-500">{formatDateTime(request.created_at)}</p>
+              <p className="text-slate-600">{formatDateTime(request.created_at)}</p>
             </td>
             <td>
               {request.status === RequestStatus.PENDING ? (
@@ -102,8 +102,8 @@ export default async function RequestsPage({ searchParams }: PageProps<"/items/r
                 <div className="whitespace-nowrap">
                   <Badge variant={request.status === RequestStatus.APPROVED ? "solid" : "outline"}>{request.status}</Badge>
                   <p className="mt-1">{request.decider?.full_name ?? "—"}</p>
-                  <p className="text-neutral-500">{request.decided_at && formatDateTime(request.decided_at)}</p>
-                  {request.decision_note && <p className="text-neutral-600">“{request.decision_note}”</p>}
+                  <p className="text-slate-600">{request.decided_at && formatDateTime(request.decided_at)}</p>
+                  {request.decision_note && <p className="text-slate-600">“{request.decision_note}”</p>}
                 </div>
               )}
             </td>

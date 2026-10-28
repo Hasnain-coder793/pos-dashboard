@@ -9,7 +9,7 @@ import { getDateRange, karachiToday } from "@/utils/date-range";
 import { formatDateTime, formatPKR } from "@/utils/format";
 import { PAGE_SIZE, pageRange, pageSchema } from "@/utils/pagination";
 
-const inputClass = "h-10 rounded-md border border-neutral-300 px-3 text-sm outline-none focus:border-primary";
+const inputClass = "h-10 rounded-md border border-slate-300 px-3 text-sm outline-none focus:border-primary";
 
 export default async function SalesPage({ searchParams }: PageProps<"/sales">) {
   await requireRole(Role.SUPER_ADMIN);
@@ -55,14 +55,14 @@ export default async function SalesPage({ searchParams }: PageProps<"/sales">) {
         </select>
         <input type="date" name="date" defaultValue={date} max={karachiToday()} className={inputClass} />
         <Button type="submit" variant="secondary">
-          Show
+          Search
         </Button>
       </form>
 
       <div className="grid gap-3 sm:grid-cols-3">
         {summary.map((item) => (
-          <div key={item.label} className="rounded-lg border border-neutral-200 p-4">
-            <p className="text-sm text-neutral-600">{item.label}</p>
+          <div key={item.label} className="rounded-lg border border-slate-200 bg-secondary p-4 shadow-sm">
+            <p className="text-sm text-slate-600">{item.label}</p>
             <p className="text-2xl font-bold">{item.value}</p>
           </div>
         ))}
@@ -76,7 +76,7 @@ export default async function SalesPage({ searchParams }: PageProps<"/sales">) {
             <td>{formatPKR(Number(row.amount_pkr))}</td>
           </tr>
         ))}
-        <tr className="bg-neutral-50 font-bold">
+        <tr className="bg-blue-50 font-bold">
           <td>Total</td>
           <td>{totalQty}</td>
           <td>{formatPKR(totalAmount)}</td>

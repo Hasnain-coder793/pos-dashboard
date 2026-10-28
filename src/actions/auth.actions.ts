@@ -11,7 +11,8 @@ export async function login(values: LoginValues): Promise<ActionResult> {
 
   const supabase = await createClient();
   const { data, error } = await supabase.auth.signInWithPassword(parsed.data);
-  if (error) return { ok: false, error: "Wrong email or password" };
+  // Deactivated users are banned, so sign-in itself fails for them
+  if (error) return { ok: false, error: error.code === "user_banned" ? "This account is deactivated" : "Wrong email or password" };
 
   const { data: profile } = await supabase.from("profiles").select("*").eq("id", data.user.id).single();
   if (!isDashboardUser(profile)) {

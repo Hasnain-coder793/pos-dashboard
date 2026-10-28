@@ -32,9 +32,9 @@ export default function LoginForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="flex w-full max-w-sm flex-col gap-4 rounded-lg border border-neutral-200 p-8">
+    <form onSubmit={handleSubmit(onSubmit)} className="flex w-full max-w-sm flex-col gap-4 rounded-lg border border-slate-200 bg-secondary p-8 shadow-lg">
       <h1 className="text-3xl font-bold">POS Dashboard</h1>
-      <p className="text-neutral-600">Log in as Super Admin or Admin</p>
+      <p className="text-slate-600">Log in as Super Admin or Admin</p>
 
       {fields.map((field) => (
         <Input

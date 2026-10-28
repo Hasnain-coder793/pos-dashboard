@@ -7,7 +7,7 @@ export default function Input({ label, error, className, ...props }: InputProps)
       {label}
       <input
         className={cn(
-          "h-10 w-full rounded-md border border-neutral-300 bg-secondary px-3 text-sm font-normal outline-none focus:border-primary",
+          "h-10 w-full rounded-md border border-slate-300 bg-secondary px-3 text-sm font-normal outline-none focus:border-primary",
           "file:mr-3 file:cursor-pointer file:border-0 file:bg-transparent file:font-semibold file:hover:underline",
           error && "border-2 border-primary",
           className,

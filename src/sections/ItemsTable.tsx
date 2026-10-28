@@ -33,7 +33,7 @@ export default function ItemsTable({ products, pendingIds, role }: ItemsTablePro
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={product.image_url} alt={product.name} className="size-10 rounded-md object-cover" />
                 ) : (
-                  <div className="size-10 rounded-md bg-neutral-100" />
+                  <div className="size-10 rounded-md bg-slate-100" />
                 )}
               </td>
               <td className="font-semibold">{product.name}</td>

@@ -62,7 +62,7 @@ export default function UserForm({ user, onClose }: UserFormProps) {
 
         <label className="flex flex-col gap-1.5 text-sm font-semibold">
           Role
-          <select {...register("role")} className="h-10 cursor-pointer rounded-md border border-neutral-300 px-3 font-normal outline-none focus:border-primary">
+          <select {...register("role")} className="h-10 cursor-pointer rounded-md border border-slate-300 px-3 font-normal outline-none focus:border-primary">
             {roles.map((option) => (
               <option key={option.value} value={option.value}>
                 {option.label}

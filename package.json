@@ -9,7 +9,8 @@
     "lint": "eslint",
     "create-super-admin": "node --env-file=.env.local scripts/create-super-admin.mjs",
     "seed-sales": "node --env-file=.env.local scripts/seed-sales.mjs",
-    "unseed-sales": "node --env-file=.env.local scripts/unseed-sales.mjs"
+    "unseed-sales": "node --env-file=.env.local scripts/unseed-sales.mjs",
+    "test:integration": "vitest run"
   },
   "dependencies": {
     "@hookform/resolvers": "^6.0.0",
@@ -34,6 +35,8 @@
     "eslint": "^9",
     "eslint-config-next": "16.4.3",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vite": "^8.3.5",
+    "vitest": "^5.0.5"
   }
 }
