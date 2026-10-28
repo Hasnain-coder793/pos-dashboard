@@ -1,7 +1,7 @@
 import type { LucideIcon } from "lucide-react";
 import type { ComponentProps, ReactNode } from "react";
 import { z } from "zod";
-import { RequestStatus, RequestType, Role, SalesPeriod } from "@/enums";
+import { ActivityEntity, RequestStatus, RequestType, Role, SalesPeriod } from "@/enums";
 import { karachiToday } from "@/utils/date-range";
 
 // ---------- Shared ----------
@@ -136,6 +136,28 @@ export type Client = {
 };
 
 export const searchSchema = z.string().trim().max(50).catch("");
+
+// ---------- Activity ----------
+
+export const activityFilterSchema = z.enum(ActivityEntity).optional().catch(undefined);
+
+// Written by database triggers: products log old/new rows, requests and sales log ids
+export type ActivityDetails = {
+  old?: Partial<Product>;
+  new?: Partial<Product>;
+  product_id?: string;
+  request_type?: RequestType;
+};
+
+export type ActivityRow = {
+  id: number;
+  action: string;
+  entity_type: ActivityEntity | null;
+  entity_id: string | null;
+  details: ActivityDetails | null;
+  created_at: string;
+  user: { full_name: string } | null;
+};
 
 // ---------- Users ----------
 

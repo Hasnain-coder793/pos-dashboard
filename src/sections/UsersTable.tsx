@@ -61,7 +61,7 @@ export default function UsersTable({ users }: UsersTableProps) {
             <td className="whitespace-nowrap">{formatDateTime(user.created_at)}</td>
             <td>
               {user.role === Role.SUPER_ADMIN ? (
-                <p className="text-right text-neutral-500">Protected</p>
+                <p className="text-right text-slate-600">Protected</p>
               ) : (
                 <div className="flex justify-end gap-2">
                   <Button variant="secondary" onClick={() => setDialog({ type: "form", user })}>

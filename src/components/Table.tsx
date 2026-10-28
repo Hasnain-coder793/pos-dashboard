@@ -2,9 +2,9 @@ import type { TableProps } from "@/types";
 
 export default function Table({ headers, children, empty }: TableProps) {
   return (
-    <div className="overflow-x-auto rounded-lg border border-neutral-200">
+    <div className="overflow-x-auto rounded-lg border border-slate-200 bg-secondary shadow-sm">
       <table className="w-full text-left text-sm">
-        <thead className="bg-neutral-50">
+        <thead className="bg-linear-to-r from-blue-50 to-slate-100">
           <tr>
             {headers.map((header) => (
               <th key={header} className="px-4 py-3 font-semibold whitespace-nowrap">
@@ -13,10 +13,10 @@ export default function Table({ headers, children, empty }: TableProps) {
             ))}
           </tr>
         </thead>
-        <tbody className="divide-y divide-neutral-200 [&_td]:px-4 [&_td]:py-3">
+        <tbody className="divide-y divide-slate-200 [&_td]:px-4 [&_td]:py-3">
           {empty ? (
             <tr>
-              <td colSpan={headers.length} className="text-center text-neutral-500">
+              <td colSpan={headers.length} className="text-center text-slate-600">
                 Nothing to show
               </td>
             </tr>

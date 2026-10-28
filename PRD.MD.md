@@ -6,13 +6,14 @@ Oct 26, 2026 · @IMTINAN
 
 Build a separate Next.js dashboard that reads and manages the data the existing POS app writes, using the same Supabase project, the same env values and the same migrations folder. No new database, no copied schema.
 
-The dashboard has exactly five pages:
+The dashboard has exactly six pages:
 
 1. Clients
 2. Sales
 3. Items (includes Item Change Requests)
 4. Notifications
 5. User Management
+6. Activity (read-only audit log)
 
 The POS app stays the only place where sales are created and receipts are printed. Editors never log into the dashboard.
 
@@ -340,7 +341,7 @@ Every page is a server component that loads data with the server Supabase client
 ### 6.1 Layout and login
 
 - `/login`: email + password via Supabase Auth. After login, read own `profiles` row. Editor or `is_active = false` → sign out with a clear message.
-- Sidebar shows only the pages the role may open. Super Admin: all five. Admin: Items only.
+- Sidebar shows only the pages the role may open. Super Admin: all six. Admin: Items only.
 - `middleware.ts` refreshes the session and redirects signed-out users to `/login`. Each page also checks role on the server and returns 404 for disallowed roles. RLS remains the real guard.
 
 ### 6.2 Items — `/items` (Super Admin, Admin)
@@ -386,6 +387,20 @@ Every page is a server component that loads data with the server Supabase client
 - **Deactivate**: sets `is_active = false` and bans the auth user via the admin API so they cannot sign in to either app.
 - Super Admin accounts cannot be created, demoted or deactivated from the dashboard. A Super Admin cannot edit their own role.
 
+### 6.8 Activity — `/activity` (Super Admin)
+
+Read-only view of `activity_log`. The dashboard never writes to it; rows come from database triggers and functions, so logging cannot be skipped from the frontend.
+
+- Table, newest first, paginated: time (Karachi), user, action, details.
+- Filter by type: All, Items (`product`), Change requests (`deletion_request`), Sales (`sale`). Invalid filter values fall back to All.
+- Actions shown with plain labels: `product_created` Item added, `product_updated` Item updated, `product_deleted` Item deleted, `request_created` Request sent, `request_approved` / `request_rejected` Request approved / rejected, `sale_created` Sale synced. Any other action shows its raw name.
+- Details:
+  - Item added / deleted: item name and price.
+  - Item updated: item name, then one "old → new" line per changed field (name, price, active) and "New image" when the image changed.
+  - Requests: item name and request type (looked up from `details.product_id`).
+  - Sales: receipt number (looked up from `entity_id`).
+- Access: `activity_log` select is allowed only with `view_reports`, so Admin gets zero rows even through the API. The page itself returns 404 for Admin.
+
 ## 7. Security, validation and errors
 
 **Security rules**
@@ -409,6 +424,7 @@ Every page is a server component that loads data with the server Supabase client
 | `notificationSchema` | phones: 1–100, each `^92[0-9]{10}$`; message 1–1,000 chars |
 | `createUserSchema` | fullName 2–60; email valid; password ≥ 8; role `admin` or `editor`; canSell boolean |
 | `updateUserSchema` | same minus email and password, plus isActive |
+| `activityFilterSchema` | type `product`, `deletion_request` or `sale`; anything else means all |
 
 **Error handling**
 
@@ -431,6 +447,7 @@ app/
   (dashboard)/sales/page.tsx
   (dashboard)/notifications/page.tsx
   (dashboard)/users/page.tsx
+  (dashboard)/activity/page.tsx
 middleware.ts
 actions/        items.ts, requests.ts, notifications.ts, users.ts, auth.ts
 components/     reusable UI: Table, Button, Input, Modal, Badge, Pagination, DateFilter
@@ -449,7 +466,8 @@ utils/          supabase/{client,server,admin}.ts, validation/*.ts, format.ts (P
 5. Migration 0010, then Sales page.
 6. Clients page (needs POS to start sending `customer_phone`).
 7. Migration 0011 and Notifications, once the WhatsApp provider is chosen.
-8. Run the test checklist in section 9 with one Super Admin, one Admin, one Editor.
+8. Activity page (reads the existing `activity_log`; no migration needed).
+9. Run the test checklist in section 9 with one Super Admin, one Admin, one Editor.
 
 ## 9. Acceptance criteria and tests
 
@@ -457,11 +475,12 @@ utils/          supabase/{client,server,admin}.ts, validation/*.ts, format.ts (P
 
 - [ ] Dashboard runs on the POS's Supabase URL and anon key; no second database, no duplicated tables.
 - [ ] Only migrations 0009–0011 are added; 0001–0008 are untouched; POS checkout still works after they run.
-- [ ] Super Admin can open all five pages; Admin sees only Items; Editor cannot sign in.
+- [ ] Super Admin can open all six pages; Admin sees only Items; Editor cannot sign in.
 - [ ] Admin adds an item with no approval and it appears in the POS.
 - [ ] Admin edit or delete creates a pending request; the item is unchanged in the POS until approval.
 - [ ] Approve applies the change; reject leaves it unchanged; both store decider, decision and time.
 - [ ] Every item create, update, delete, request and decision has an `activity_log` row with actor and time.
+- [ ] Activity page lists those rows newest first with user, action and readable details, and filters by Items, Change requests and Sales.
 - [ ] Clients shows name, phone, and full purchase history with items, quantities and totals.
 - [ ] Sales filters by day, week, month and year in Karachi time, with item-wise and grand totals that match the database.
 - [ ] Notifications send to one or many customers and show Accepted or Failed per number.
@@ -473,7 +492,7 @@ utils/          supabase/{client,server,admin}.ts, validation/*.ts, format.ts (P
 - [ ] `update` on `products` → no rows changed.
 - [ ] `update` on `product_deletion_requests` (set status approved) → denied.
 - [ ] `rpc('decide_product_request')` → "Only Super Admin can decide requests".
-- [ ] `select` on `sales`, `client_summary`, `notifications` and `rpc('sales_item_report')` → zero rows.
+- [ ] `select` on `sales`, `client_summary`, `notifications`, `activity_log` and `rpc('sales_item_report')` → zero rows.
 - [ ] `update` on another user's `profiles` row → no rows changed.
 - [ ] Upload to `product-images` with an existing path and `upsert: true` → denied.
 - [ ] Insert a request with `status = 'approved'` → denied.

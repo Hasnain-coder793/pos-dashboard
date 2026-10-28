@@ -15,6 +15,12 @@ export enum RequestStatus {
   REJECTED = "rejected",
 }
 
+export enum ActivityEntity {
+  PRODUCT = "product",
+  REQUEST = "deletion_request",
+  SALE = "sale",
+}
+
 export enum SalesPeriod {
   DAY = "day",
   WEEK = "week",

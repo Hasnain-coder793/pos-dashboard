@@ -27,18 +27,18 @@ export default async function ClientHistoryPage({ params }: PageProps<"/clients/
       </Link>
       <div>
         <h1 className="text-2xl font-bold">{name}</h1>
-        <p className="text-neutral-600">
+        <p className="text-slate-600">
           {phone} · {sales.length} orders · {formatPKR(sales.reduce((sum, sale) => sum + sale.total_pkr, 0))}
         </p>
       </div>
 
-      {!sales.length && <p className="text-neutral-500">No purchases found.</p>}
+      {!sales.length && <p className="text-slate-600">No purchases found.</p>}
 
       {sales.map((sale) => (
-        <div key={sale.id} className="rounded-lg border border-neutral-200 p-4">
+        <div key={sale.id} className="rounded-lg border border-slate-200 bg-secondary p-4 shadow-sm">
           <div className="mb-2 flex flex-wrap justify-between gap-2 text-sm">
             <span className="font-semibold">Receipt {sale.receipt_no}</span>
-            <span className="text-neutral-600">{formatDateTime(sale.sold_at)}</span>
+            <span className="text-slate-600">{formatDateTime(sale.sold_at)}</span>
           </div>
           {sale.sale_items?.map((item, i) => (
             <div key={i} className="flex justify-between text-sm">
@@ -48,7 +48,7 @@ export default async function ClientHistoryPage({ params }: PageProps<"/clients/
               <span>{formatPKR(item.line_total_pkr)}</span>
             </div>
           ))}
-          <div className="mt-2 flex justify-between border-t border-neutral-200 pt-2 font-bold">
+          <div className="mt-2 flex justify-between border-t border-slate-200 pt-2 font-bold">
             <span>Total</span>
             <span>{formatPKR(sale.total_pkr)}</span>
           </div>

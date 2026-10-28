@@ -70,7 +70,7 @@ export default function ItemForm({ product, role, onClose }: ItemFormProps) {
         <Input label="Image (optional, max 2 MB)" type="file" accept="image/jpeg,image/png,image/webp" error={errors.image?.message} {...register("image")} />
 
         {!isRequest && <Checkbox label="Active (shown in the POS)" {...register("is_active")} />}
-        {isRequest && <p className="text-sm text-neutral-600">A Super Admin must approve this change before it reaches the POS.</p>}
+        {isRequest && <p className="text-sm text-slate-600">A Super Admin must approve this change before it reaches the POS.</p>}
 
         <ErrorBanner message={serverError} />
 

@@ -31,7 +31,7 @@ export default function RequestActions({ requestId }: RequestActionsProps) {
     <form onSubmit={handleSubmit(onSubmit)} className="flex min-w-56 flex-col gap-2">
       <input
         placeholder="Note (optional)"
-        className="h-9 rounded-md border border-neutral-300 px-2 text-sm outline-none focus:border-primary"
+        className="h-9 rounded-md border border-slate-300 px-2 text-sm outline-none focus:border-primary"
         {...register("note")}
       />
       <div className="flex gap-2">

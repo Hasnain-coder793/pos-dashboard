@@ -58,7 +58,7 @@ export default async function RequestsPage({ searchParams }: PageProps<"/items/r
           <Link
             key={s}
             href={`?status=${s}`}
-            className={cn("rounded-full border border-primary px-3 py-1 text-sm font-semibold capitalize hover:bg-neutral-100", s === status && "bg-primary text-secondary hover:bg-neutral-800")}
+            className={cn("rounded-full border border-primary px-3 py-1 text-sm font-semibold capitalize text-primary hover:bg-blue-50", s === status && "bg-primary text-secondary hover:bg-blue-800")}
           >
             {s}
           </Link>
@@ -89,7 +89,7 @@ export default async function RequestsPage({ searchParams }: PageProps<"/items/r
             <td className="max-w-xs">{request.reason}</td>
             <td className="whitespace-nowrap">
               <p>{request.requester?.full_name ?? "—"}</p>
-              <p className="text-neutral-500">{formatDateTime(request.created_at)}</p>
+              <p className="text-slate-600">{formatDateTime(request.created_at)}</p>
             </td>
             <td>
               {request.status === RequestStatus.PENDING ? (
@@ -102,8 +102,8 @@ export default async function RequestsPage({ searchParams }: PageProps<"/items/r
                 <div className="whitespace-nowrap">
                   <Badge variant={request.status === RequestStatus.APPROVED ? "solid" : "outline"}>{request.status}</Badge>
                   <p className="mt-1">{request.decider?.full_name ?? "—"}</p>
-                  <p className="text-neutral-500">{request.decided_at && formatDateTime(request.decided_at)}</p>
-                  {request.decision_note && <p className="text-neutral-600">“{request.decision_note}”</p>}
+                  <p className="text-slate-600">{request.decided_at && formatDateTime(request.decided_at)}</p>
+                  {request.decision_note && <p className="text-slate-600">“{request.decision_note}”</p>}
                 </div>
               )}
             </td>

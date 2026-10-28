@@ -52,7 +52,7 @@ export default async function ClientsPage({ searchParams }: PageProps<"/clients"
 
       <Table headers={["Name", "Phone", "Orders", "Total spent", "Last purchase"]} empty={!clients.length}>
         {clients.map((client) => (
-          <tr key={client.customer_phone} className="hover:bg-neutral-50">
+          <tr key={client.customer_phone} className="hover:bg-blue-50">
             <td className="font-semibold">
               <Link href={`/clients/${client.customer_phone}`} className="hover:underline">
                 {client.customer_name ?? "Unknown"}
