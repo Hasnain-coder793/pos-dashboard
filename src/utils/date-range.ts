@@ -5,6 +5,9 @@ const toKarachiStart = (d: Date) => new Date(`${d.toISOString().slice(0, 10)}T00
 
 export const karachiToday = () => new Date(Date.now() + 5 * 60 * 60 * 1000).toISOString().slice(0, 10);
 
+// A range bound (Karachi midnight as UTC) back to its Karachi date, for date columns
+export const toKarachiDate = (iso: string) => new Date(new Date(iso).getTime() + 5 * 60 * 60 * 1000).toISOString().slice(0, 10);
+
 // "All" period: no date limit
 export const ALL_TIME = { from: "2000-01-01T00:00:00Z", to: "2100-01-01T00:00:00Z" };
 

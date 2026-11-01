@@ -15,3 +15,8 @@ const dateTime = new Intl.DateTimeFormat("en-GB", {
 export function formatDateTime(value: string): string {
   return dateTime.format(new Date(value));
 }
+
+// A plain YYYY-MM-DD date column, shown as DD/MM/YYYY
+export function formatDate(value: string): string {
+  return value.split("-").reverse().join("/");
+}

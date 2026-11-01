@@ -21,6 +21,16 @@ export enum ActivityEntity {
   SALE = "sale",
 }
 
+export enum ExpenseStatus {
+  ACTIVE = "active",
+  CANCELLED = "cancelled",
+}
+
+export enum ExpenseRequestType {
+  CANCEL = "cancel",
+  DELETE = "delete",
+}
+
 export enum SalesPeriod {
   DAY = "day",
   WEEK = "week",
