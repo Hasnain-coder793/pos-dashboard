@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Badge from "@/components/Badge";
 import Button from "@/components/Button";
+import Notice from "@/components/Notice";
 import Table from "@/components/Table";
 import type { ItemsTableProps, Product } from "@/types";
 import { formatDateTime, formatPKR } from "@/utils/format";
@@ -13,13 +14,20 @@ type Dialog = { type: "add" } | { type: "edit" | "delete"; product: Product } | 
 
 export default function ItemsTable({ products, pendingIds, role }: ItemsTableProps) {
   const [dialog, setDialog] = useState<Dialog>(null);
+  const [notice, setNotice] = useState("");
   const close = () => setDialog(null);
+  const done = (message: string) => {
+    setDialog(null);
+    setNotice(message);
+  };
 
   return (
     <>
       <Button onClick={() => setDialog({ type: "add" })} className="self-start">
         + Add item
       </Button>
+
+      <Notice message={notice} />
 
       <Table headers={["Name", "Price", "Status", "Updated", ""]} empty={!products.length}>
         {products.map((product) => {
@@ -56,9 +64,9 @@ export default function ItemsTable({ products, pendingIds, role }: ItemsTablePro
         })}
       </Table>
 
-      {dialog?.type === "add" && <ItemForm role={role} onClose={close} />}
-      {dialog?.type === "edit" && <ItemForm product={dialog.product} role={role} onClose={close} />}
-      {dialog?.type === "delete" && <DeleteForm product={dialog.product} role={role} onClose={close} />}
+      {dialog?.type === "add" && <ItemForm role={role} onClose={close} onDone={done} />}
+      {dialog?.type === "edit" && <ItemForm product={dialog.product} role={role} onClose={close} onDone={done} />}
+      {dialog?.type === "delete" && <DeleteForm product={dialog.product} role={role} onClose={close} onDone={done} />}
     </>
   );
 }

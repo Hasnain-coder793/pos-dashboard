@@ -1,7 +1,7 @@
 import type { LucideIcon } from "lucide-react";
 import type { ComponentProps, ReactNode } from "react";
 import { z } from "zod";
-import { ActivityEntity, ExpenseRequestType, ExpenseStatus, RequestStatus, RequestType, Role, SalesPeriod } from "@/enums";
+import { ActivityEntity, ExpenseRequestType, RequestStatus, RequestType, Role, SalesPeriod } from "@/enums";
 import { karachiToday } from "@/utils/date-range";
 
 // ---------- Shared ----------
@@ -91,38 +91,45 @@ export type Expense = {
   id: string;
   title: string;
   amount_pkr: number;
-  note: string | null;
   spent_on: string;
-  status: ExpenseStatus;
   created_by_name: string;
   created_at: string;
 };
+
+type ExpenseFields = Pick<Expense, "title" | "amount_pkr" | "spent_on">;
 
 export type ExpenseRequest = {
   id: string;
   expense_id: string;
   request_type: ExpenseRequestType;
+  status: RequestStatus;
   reason: string;
+  new_title: string | null;
+  new_amount_pkr: number | null;
+  new_spent_on: string | null;
+  old_values: ExpenseFields | null;
+  decision_note: string | null;
+  decided_by_name: string | null;
+  decided_at: string | null;
   created_by_name: string;
   created_at: string;
-  expense: Pick<Expense, "title" | "amount_pkr" | "spent_on"> | null;
+  expense: ExpenseFields | null;
 };
 
 export type ExpenseSummary = { expense_count: number; total_pkr: number };
 
+// Used by the server action
 export const expenseSchema = z.object({
   title: z.string().trim().min(2, "At least 2 characters").max(80, "Max 80 characters"),
   amount_pkr: z.number("Enter an amount").int("Whole PKR only").min(1, "Min 1").max(10000000, "Max 10,000,000"),
   spent_on: z.iso.date("Pick a date").refine((date) => date <= karachiToday(), "Date cannot be in the future"),
-  note: z.string().trim().max(300, "Max 300 characters"),
+  reason: reasonField(false),
 });
 
 export type ExpenseValues = z.infer<typeof expenseSchema>;
 
-// Admin must give a reason, since the change goes to Super Admin as a request
-export const expenseRemovalSchema = (requireReason: boolean) => z.object({ type: z.enum(ExpenseRequestType), reason: reasonField(requireReason) });
-
-export type ExpenseRemovalValues = z.infer<ReturnType<typeof expenseRemovalSchema>>;
+// Used by the form: Admin edits must give a reason
+export const expenseFormSchema = (requireReason: boolean) => expenseSchema.extend({ reason: reasonField(requireReason) });
 
 // ---------- Sales & clients ----------
 
@@ -225,17 +232,21 @@ export type SidebarProps = { profile: Profile };
 
 export type ItemsTableProps = { products: Product[]; pendingIds: string[]; role: Role };
 
-export type ItemFormProps = { product?: Product; role: Role; onClose: () => void };
+// onDone closes the dialog and shows a confirmation message
+export type ItemFormProps = { product?: Product; role: Role; onClose: () => void; onDone: (message: string) => void };
 
-export type DeleteFormProps = { product: Product; role: Role; onClose: () => void };
+export type DeleteFormProps = { product: Product; role: Role; onClose: () => void; onDone: (message: string) => void };
 
 export type RequestActionsProps = { requestId: string; decide?: (values: DecisionValues) => Promise<ActionResult> };
 
 export type ExpensesTableProps = { expenses: Expense[]; pendingIds: string[]; role: Role };
 
-export type ExpenseFormProps = { onClose: () => void };
+// onDone closes the dialog and shows a confirmation message
+export type ExpenseFormProps = { expense?: Expense; role: Role; onClose: () => void; onDone: (message: string) => void };
 
-export type RemoveExpenseFormProps = { expense: Expense; type: ExpenseRequestType; role: Role; onClose: () => void };
+export type DeleteExpenseFormProps = { expense: Expense; role: Role; onClose: () => void; onDone: (message: string) => void };
+
+export type TabsProps = { tabs: { href: string; label: string }[]; active: string };
 
 export type UsersTableProps = { users: UserRow[] };
 

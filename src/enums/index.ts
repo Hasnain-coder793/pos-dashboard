@@ -21,13 +21,8 @@ export enum ActivityEntity {
   SALE = "sale",
 }
 
-export enum ExpenseStatus {
-  ACTIVE = "active",
-  CANCELLED = "cancelled",
-}
-
 export enum ExpenseRequestType {
-  CANCEL = "cancel",
+  UPDATE = "update",
   DELETE = "delete",
 }
 

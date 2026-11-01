@@ -11,7 +11,7 @@ import Modal from "@/components/Modal";
 import { Role } from "@/enums";
 import { deleteSchema, type DeleteFormProps, type DeleteValues } from "@/types";
 
-export default function DeleteForm({ product, role, onClose }: DeleteFormProps) {
+export default function DeleteForm({ product, role, onClose, onDone }: DeleteFormProps) {
   const isRequest = role === Role.ADMIN;
   const [serverError, setServerError] = useState("");
   const {
@@ -24,7 +24,7 @@ export default function DeleteForm({ product, role, onClose }: DeleteFormProps) 
     setServerError("");
     const result = await deleteItem(product.id, values);
     if (!result.ok) return setServerError(result.error);
-    onClose();
+    onDone(isRequest ? "Delete request sent to Super Admin" : "Item deleted");
   }
 
   return (

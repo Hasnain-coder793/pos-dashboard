@@ -12,7 +12,7 @@ import Modal from "@/components/Modal";
 import { Role } from "@/enums";
 import { itemFormSchema, type ItemFormProps, type ItemFormValues } from "@/types";
 
-export default function ItemForm({ product, role, onClose }: ItemFormProps) {
+export default function ItemForm({ product, role, onClose, onDone }: ItemFormProps) {
   const isRequest = !!product && role === Role.ADMIN;
   const [serverError, setServerError] = useState("");
   const {
@@ -35,7 +35,7 @@ export default function ItemForm({ product, role, onClose }: ItemFormProps) {
     try {
       const result = product ? await updateItem(product.id, values) : await createItem(values);
       if (!result.ok) return setServerError(result.error);
-      onClose();
+      onDone(isRequest ? "Change request sent to Super Admin" : product ? "Item updated" : "Item added");
     } catch (error) {
       setServerError((error as Error).message);
     }

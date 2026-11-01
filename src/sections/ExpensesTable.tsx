@@ -3,23 +3,23 @@
 import { useState } from "react";
 import Badge from "@/components/Badge";
 import Button from "@/components/Button";
+import Notice from "@/components/Notice";
 import Table from "@/components/Table";
-import { ExpenseRequestType, ExpenseStatus } from "@/enums";
 import type { Expense, ExpensesTableProps } from "@/types";
-import { formatDate, formatPKR } from "@/utils/format";
+import { formatDate, formatDateTime, formatPKR } from "@/utils/format";
+import DeleteExpenseForm from "./DeleteExpenseForm";
 import ExpenseForm from "./ExpenseForm";
-import RemoveExpenseForm from "./RemoveExpenseForm";
 
-type Dialog = { type: "add" } | { type: ExpenseRequestType; expense: Expense } | null;
-
-const removals = [
-  { type: ExpenseRequestType.CANCEL, label: "Cancel" },
-  { type: ExpenseRequestType.DELETE, label: "Delete" },
-];
+type Dialog = { type: "add" } | { type: "edit" | "delete"; expense: Expense } | null;
 
 export default function ExpensesTable({ expenses, pendingIds, role }: ExpensesTableProps) {
   const [dialog, setDialog] = useState<Dialog>(null);
+  const [notice, setNotice] = useState("");
   const close = () => setDialog(null);
+  const done = (message: string) => {
+    setDialog(null);
+    setNotice(message);
+  };
 
   return (
     <>
@@ -27,36 +27,28 @@ export default function ExpensesTable({ expenses, pendingIds, role }: ExpensesTa
         + Add expense
       </Button>
 
-      <Table headers={["Date", "Title", "Note", "Added by", "Amount", "Status", ""]} empty={!expenses.length}>
+      <Notice message={notice} />
+
+      <Table headers={["Date", "Title", "Amount", "Added by", "Added at", "Status", ""]} empty={!expenses.length}>
         {expenses.map((expense) => {
           const pending = pendingIds.includes(expense.id);
-          const cancelled = expense.status === ExpenseStatus.CANCELLED;
 
           return (
             <tr key={expense.id}>
               <td className="whitespace-nowrap">{formatDate(expense.spent_on)}</td>
               <td className="font-semibold">{expense.title}</td>
-              <td className="max-w-xs">{expense.note ?? "—"}</td>
-              <td>{expense.created_by_name}</td>
               <td className="whitespace-nowrap">{formatPKR(expense.amount_pkr)}</td>
-              <td>
-                <div className="flex gap-1">
-                  <Badge variant={cancelled ? "outline" : "solid"}>{cancelled ? "Cancelled" : "Active"}</Badge>
-                  {pending && <Badge>Pending request</Badge>}
-                </div>
-              </td>
+              <td>{expense.created_by_name}</td>
+              <td className="whitespace-nowrap">{formatDateTime(expense.created_at)}</td>
+              <td>{pending ? <Badge>Pending change</Badge> : <Badge variant="solid">Added</Badge>}</td>
               <td>
                 <div className="flex justify-end gap-2">
-                  {removals.map((removal) => (
-                    <Button
-                      key={removal.type}
-                      variant="secondary"
-                      disabled={pending || (cancelled && removal.type === ExpenseRequestType.CANCEL)}
-                      onClick={() => setDialog({ type: removal.type, expense })}
-                    >
-                      {removal.label}
-                    </Button>
-                  ))}
+                  <Button variant="secondary" disabled={pending} onClick={() => setDialog({ type: "edit", expense })}>
+                    Edit
+                  </Button>
+                  <Button variant="secondary" disabled={pending} onClick={() => setDialog({ type: "delete", expense })}>
+                    Delete
+                  </Button>
                 </div>
               </td>
             </tr>
@@ -64,8 +56,9 @@ export default function ExpensesTable({ expenses, pendingIds, role }: ExpensesTa
         })}
       </Table>
 
-      {dialog?.type === "add" && <ExpenseForm onClose={close} />}
-      {dialog && dialog.type !== "add" && <RemoveExpenseForm expense={dialog.expense} type={dialog.type} role={role} onClose={close} />}
+      {dialog?.type === "add" && <ExpenseForm role={role} onClose={close} onDone={done} />}
+      {dialog?.type === "edit" && <ExpenseForm expense={dialog.expense} role={role} onClose={close} onDone={done} />}
+      {dialog?.type === "delete" && <DeleteExpenseForm expense={dialog.expense} role={role} onClose={close} onDone={done} />}
     </>
   );
 }
