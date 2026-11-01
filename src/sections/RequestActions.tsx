@@ -12,7 +12,8 @@ const decisions = [
   { label: "Reject", approve: false, variant: "secondary" },
 ] as const;
 
-export default function RequestActions({ requestId }: RequestActionsProps) {
+// decide defaults to item requests; Expenses passes its own action
+export default function RequestActions({ requestId, decide = decideRequest }: RequestActionsProps) {
   const [serverError, setServerError] = useState("");
   const {
     register,
@@ -23,7 +24,7 @@ export default function RequestActions({ requestId }: RequestActionsProps) {
 
   async function onSubmit(values: DecisionValues) {
     setServerError("");
-    const result = await decideRequest(values);
+    const result = await decide(values);
     if (!result.ok) setServerError(result.error);
   }
 
