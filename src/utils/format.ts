@@ -9,7 +9,7 @@ const dateTime = new Intl.DateTimeFormat("en-GB", {
   year: "numeric",
   hour: "2-digit",
   minute: "2-digit",
-  hour12: false,
+  hour12: true,
 });
 
 export function formatDateTime(value: string): string {
