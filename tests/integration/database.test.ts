@@ -1,5 +1,5 @@
 import { beforeAll, describe, expect, it } from "vitest";
-import { anonClient, BUCKET, createProduct, imagePath, must, PNG, salePayload, serviceClient, signedIn, testEmail, type Client, type TestUser } from "./helpers";
+import { anonClient, createProduct, must, salePayload, serviceClient, signedIn, testEmail, type Client, type TestUser } from "./helpers";
 
 // Database rules (RLS, functions, triggers, storage) checked as each real role
 
@@ -76,7 +76,7 @@ describe("change requests", () => {
   it("snapshot the old values and allow only one pending request per item", async () => {
     const product = await createProduct("snapshot");
     const created = await must(admin.client.from("product_deletion_requests").insert(request(product.id)).select("id, old_values").single());
-    expect(created.old_values).toEqual({ name: product.name, price_pkr: 200, image_url: null });
+    expect(created.old_values).toEqual({ name: product.name, price_pkr: 200 });
 
     const { error } = await admin.client.from("product_deletion_requests").insert(request(product.id, { new_price_pkr: 400 }));
     expect(error?.code).toBe("23505");
@@ -241,34 +241,5 @@ describe("profiles", () => {
     expect(await must(admin.client.from("profiles").update({ role: "super_admin" }).eq("id", admin.user.id).select())).toEqual([]);
     expect(await must(admin.client.from("profiles").select("id").eq("id", editor.user.id))).toEqual([]);
     expect(await must(editor.client.from("profiles").select("role").eq("id", editor.user.id).single())).toEqual({ role: "editor" });
-  });
-});
-
-describe("product images storage", () => {
-  const upload = (client: Client, path: string, body: Buffer, contentType = "image/png") =>
-    client.storage.from(BUCKET).upload(path, new Blob([new Uint8Array(body)], { type: contentType }), { contentType, upsert: false });
-
-  it("Admin can upload a PNG, but not a GIF, a file over 2 MB, or overwrite", async () => {
-    const path = imagePath("ok");
-    expect((await upload(admin.client, path, PNG)).error).toBeNull();
-    expect((await upload(admin.client, imagePath("gif", "gif"), PNG, "image/gif")).error).not.toBeNull();
-    expect((await upload(admin.client, imagePath("big"), Buffer.alloc(2 * 1024 * 1024 + 1))).error).not.toBeNull();
-    expect((await upload(admin.client, path, PNG)).error).not.toBeNull();
-  });
-
-  it("Editor cannot upload", async () => {
-    expect((await upload(editor.client, imagePath("editor"), PNG)).error).not.toBeNull();
-  });
-
-  it("only Super Admin can delete an image", async () => {
-    const path = imagePath("delete");
-    await upload(admin.client, path, PNG);
-    const name = path.split("/")[1];
-    const exists = async () => (await must(service.storage.from(BUCKET).list("products", { search: name }))).length === 1;
-
-    await admin.client.storage.from(BUCKET).remove([path]);
-    expect(await exists()).toBe(true);
-    await superAdmin.client.storage.from(BUCKET).remove([path]);
-    expect(await exists()).toBe(false);
   });
 });

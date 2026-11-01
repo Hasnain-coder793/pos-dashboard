@@ -7,12 +7,9 @@ import { getCaller } from "@/lib/auth";
 import { Role } from "@/enums";
 import {
   anonClient,
-  BUCKET,
   createProduct,
-  imagePath,
   must,
   PASSWORD,
-  PNG,
   salePayload,
   serviceClient,
   signedIn,
@@ -37,7 +34,7 @@ const service = serviceClient();
 
 const actAs = (who: { client: Client }) => (session.client = who.client);
 
-const item = (label: string, extra: Record<string, unknown> = {}) => ({ name: testName(label), price_pkr: 250, is_active: true, image_url: null, reason: "", ...extra });
+const item = (label: string, extra: Record<string, unknown> = {}) => ({ name: testName(label), price_pkr: 250, is_active: true, reason: "", ...extra });
 
 beforeAll(async () => {
   [superAdmin, admin, editor] = await Promise.all([signedIn("superAdmin"), signedIn("admin"), signedIn("editor")]);
@@ -57,19 +54,15 @@ describe("getCaller", () => {
 });
 
 describe("items", () => {
-  it("Admin adds an item with an uploaded image", async () => {
+  it("Admin adds an item", async () => {
     actAs(admin);
-    const path = imagePath("action");
-    await must(admin.client.storage.from(BUCKET).upload(path, new Blob([new Uint8Array(PNG)], { type: "image/png" }), { contentType: "image/png" }));
-    const image_url = admin.client.storage.from(BUCKET).getPublicUrl(path).data.publicUrl;
-
-    expect(await createItem(item("with-image", { image_url }))).toEqual({ ok: true });
-    expect(await must(service.from("products").select("image_url").eq("name", testName("with-image")).single())).toEqual({ image_url });
+    expect(await createItem(item("added"))).toEqual({ ok: true });
+    expect(await must(service.from("products").select("price_pkr").eq("name", testName("added")).single())).toEqual({ price_pkr: 250 });
   });
 
-  it("refuses an image URL from outside the bucket", async () => {
+  it("refuses invalid fields", async () => {
     actAs(admin);
-    expect(await createItem(item("bad-image", { image_url: "https://example.com/x.png" }))).toEqual({ ok: false, error: "Check the form fields" });
+    expect(await createItem(item("bad-price", { price_pkr: 0 }))).toEqual({ ok: false, error: "Check the form fields" });
   });
 
   it("Editor cannot add items", async () => {
@@ -80,15 +73,15 @@ describe("items", () => {
   it("Admin edit becomes a request with only the changed field; Super Admin approves it", async () => {
     const product = await createProduct("admin-edit");
     actAs(admin);
-    const values = { name: product.name, price_pkr: 275, is_active: true, image_url: null, reason: "price up" };
+    const values = { name: product.name, price_pkr: 275, is_active: true, reason: "price up" };
     expect(await updateItem(product.id, values)).toEqual({ ok: true });
     expect(await updateItem(product.id, values)).toEqual({ ok: false, error: "This item already has a pending request" });
     expect(await deleteItem(product.id, { reason: "remove it" })).toEqual({ ok: false, error: "This item already has a pending request" });
 
     const request = await must(
-      service.from("product_deletion_requests").select("id, new_name, new_price_pkr, new_image_url, old_values").eq("product_id", product.id).single(),
+      service.from("product_deletion_requests").select("id, new_name, new_price_pkr, old_values").eq("product_id", product.id).single(),
     );
-    expect(request).toMatchObject({ new_name: null, new_price_pkr: 275, new_image_url: null, old_values: { price_pkr: 200 } });
+    expect(request).toMatchObject({ new_name: null, new_price_pkr: 275, old_values: { price_pkr: 200 } });
 
     expect(await decideRequest({ requestId: request.id, approve: true, note: "" })).toEqual({ ok: false, error: "Only Super Admin can decide requests" });
     actAs(superAdmin);
@@ -100,7 +93,7 @@ describe("items", () => {
   it("Admin edit with no changes is refused", async () => {
     const product = await createProduct("no-change");
     actAs(admin);
-    expect(await updateItem(product.id, { name: product.name, price_pkr: 200, is_active: true, image_url: null, reason: "nothing" })).toEqual({
+    expect(await updateItem(product.id, { name: product.name, price_pkr: 200, is_active: true, reason: "nothing" })).toEqual({
       ok: false,
       error: "Nothing was changed",
     });
@@ -109,7 +102,7 @@ describe("items", () => {
   it("Super Admin edits and deletes directly", async () => {
     const product = await createProduct("sa-direct");
     actAs(superAdmin);
-    expect(await updateItem(product.id, { name: product.name, price_pkr: 500, is_active: false, image_url: null, reason: "" })).toEqual({ ok: true });
+    expect(await updateItem(product.id, { name: product.name, price_pkr: 500, is_active: false, reason: "" })).toEqual({ ok: true });
     expect(await deleteItem(product.id, { reason: "" })).toEqual({ ok: true });
     expect(await must(service.from("products").select("price_pkr, is_active, deleted_at").eq("id", product.id).single())).toMatchObject({
       price_pkr: 500,

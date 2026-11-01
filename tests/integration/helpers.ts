@@ -35,7 +35,7 @@ export async function createProduct(label: string, extra: Record<string, unknown
     serviceClient()
       .from("products")
       .insert({ name: testName(label), price_pkr: 200, ...extra })
-      .select("id, name, price_pkr, image_url, is_active, deleted_at")
+      .select("id, name, price_pkr, is_active, deleted_at")
       .single(),
   );
 }
@@ -61,8 +61,3 @@ export function salePayload(createdBy: string, lines: Line[], extra: Record<stri
     ...extra,
   };
 }
-
-// 1x1 PNG
-export const PNG = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=", "base64");
-
-export const imagePath = (label: string, ext = "png") => `products/${PREFIX}${inject("run")}-${label}-${randomUUID()}.${ext}`;
