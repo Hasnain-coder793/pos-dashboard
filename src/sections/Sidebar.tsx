@@ -1,6 +1,6 @@
 "use client";
 
-import { History, Package, ShoppingCart, UserCog, Users } from "lucide-react";
+import { ChartBar, History, Package, ShoppingCart, UserCog, Users } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { logout } from "@/actions/auth.actions";
@@ -12,6 +12,7 @@ const links: NavLink[] = [
   { href: "/items", label: "Items", icon: Package, roles: [Role.SUPER_ADMIN, Role.ADMIN] },
   { href: "/clients", label: "Clients", icon: Users, roles: [Role.SUPER_ADMIN] },
   { href: "/sales", label: "Sales", icon: ShoppingCart, roles: [Role.SUPER_ADMIN] },
+  { href: "/analysis", label: "Sales Analysis", icon: ChartBar, roles: [Role.SUPER_ADMIN] },
   { href: "/users", label: "Users", icon: UserCog, roles: [Role.SUPER_ADMIN] },
   { href: "/activity", label: "Activity", icon: History, roles: [Role.SUPER_ADMIN] },
 ];
