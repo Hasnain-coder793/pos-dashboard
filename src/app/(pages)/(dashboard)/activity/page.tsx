@@ -46,9 +46,7 @@ function describe(row: ActivityRow, productNames: Record<string, string>, receip
   if (row.action !== "product_updated" || !before) return [`${after.name} · ${formatPKR(after.price_pkr ?? 0)}`];
   return [
     `${after.name}`,
-    ...fields.filter((field) => before[field.key] !== after[field.key]).map((field) => `${field.label}: ${field.format(before[field.key])} → ${field.format(after[field.key])}`),
-    ...(before.image_url !== after.image_url ? ["New image"] : []),
-  ];
+    ...fields.filter((field) => before[field.key] !== after[field.key]).map((field) => `${field.label}: ${field.format(before[field.key])} → ${field.format(after[field.key])}`),  ];
 }
 
 export default async function ActivityPage({ searchParams }: PageProps<"/activity">) {

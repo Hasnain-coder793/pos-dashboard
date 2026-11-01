@@ -1,7 +1,7 @@
 import type { TestProject } from "vitest/node";
-import { anonClient, BUCKET, PASSWORD, PREFIX, serviceClient, USERS, type TestUser, type UserKey } from "./shared";
+import { anonClient, PASSWORD, PREFIX, serviceClient, USERS, type TestUser, type UserKey } from "./shared";
 
-// Removes every row and file the tests created, including leftovers from an interrupted run
+// Removes every row the tests created, including leftovers from an interrupted run
 async function cleanup() {
   const service = serviceClient();
   const check = ({ error }: { error: unknown }) => {
@@ -28,9 +28,6 @@ async function cleanup() {
     check(await service.from("activity_log").delete().in("entity_id", productIds));
     check(await service.from("products").delete().in("id", productIds));
   }
-
-  const { data: files } = await service.storage.from(BUCKET).list("products", { search: PREFIX, limit: 1000 });
-  if (files?.length) await service.storage.from(BUCKET).remove(files.map((file) => `products/${file.name}`));
 
   for (const id of userIds) check(await service.auth.admin.deleteUser(id));
 }

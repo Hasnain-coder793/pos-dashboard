@@ -1,9 +1,8 @@
 import { createClient } from "@supabase/supabase-js";
 
-// Every test row is tagged with this prefix so cleanup can find it (users by email, products by name, files by path)
+// Every test row is tagged with this prefix so cleanup can find it (users by email, products by name)
 export const PREFIX = "it-";
 export const PASSWORD = "it-Passw0rd!2026";
-export const BUCKET = "product-images";
 
 export const USERS = {
   superAdmin: { role: "super_admin", can_sell: true },

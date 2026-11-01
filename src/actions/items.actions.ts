@@ -12,9 +12,9 @@ export async function createItem(values: ItemValues): Promise<ActionResult> {
   if (!parsed.success) return { ok: false, error: "Check the form fields" };
   if (!(await getCaller())) return { ok: false, error: "You do not have permission to do this" };
 
-  const { name, price_pkr, is_active, image_url } = parsed.data;
+  const { name, price_pkr, is_active } = parsed.data;
   const supabase = await createClient();
-  const { error } = await supabase.from("products").insert({ name, price_pkr, is_active, image_url });
+  const { error } = await supabase.from("products").insert({ name, price_pkr, is_active });
   if (error) return { ok: false, error: toErrorMessage(error) };
 
   revalidatePath("/items");
@@ -29,23 +29,21 @@ export async function updateItem(id: string, values: ItemValues): Promise<Action
   const caller = await getCaller();
   if (!caller) return { ok: false, error: "You do not have permission to do this" };
 
-  const { name, price_pkr, is_active, image_url, reason } = parsed.data;
+  const { name, price_pkr, is_active, reason } = parsed.data;
   const supabase = await createClient();
 
   if (caller.role === Role.SUPER_ADMIN) {
-    const { error } = await supabase.from("products").update({ name, price_pkr, is_active, image_url }).eq("id", id);
+    const { error } = await supabase.from("products").update({ name, price_pkr, is_active }).eq("id", id);
     if (error) return { ok: false, error: toErrorMessage(error) };
   } else {
     if (reason.length < 3) return { ok: false, error: "Give a reason for the change" };
 
-    const { data: product } = await supabase.from("products").select("name, price_pkr, image_url").eq("id", id).single();
+    const { data: product } = await supabase.from("products").select("name, price_pkr").eq("id", id).single();
     if (!product) return { ok: false, error: "Item not found" };
 
     const changes = {
       new_name: name !== product.name ? name : null,
-      new_price_pkr: price_pkr !== product.price_pkr ? price_pkr : null,
-      new_image_url: image_url !== product.image_url ? image_url : null,
-    };
+      new_price_pkr: price_pkr !== product.price_pkr ? price_pkr : null,    };
     if (Object.values(changes).every((value) => value === null)) return { ok: false, error: "Nothing was changed" };
 
     const { error } = await supabase

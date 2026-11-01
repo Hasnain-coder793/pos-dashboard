@@ -21,7 +21,6 @@ function changes(request: ItemRequest) {
   return [
     request.new_name && `Name: ${product?.name} → ${request.new_name}`,
     request.new_price_pkr && `Price: ${formatPKR(product?.price_pkr ?? 0)} → ${formatPKR(request.new_price_pkr)}`,
-    request.new_image_url && "New image",
   ].filter(Boolean);
 }
 
@@ -36,8 +35,8 @@ export default async function RequestsPage({ searchParams }: PageProps<"/items/r
   const { data, count } = await supabase
     .from("product_deletion_requests")
     .select(
-      `id, request_type, status, reason, new_name, new_price_pkr, new_image_url, decision_note, old_values, created_at, decided_at,
-       product:products(name, price_pkr, image_url),
+      `id, request_type, status, reason, new_name, new_price_pkr, decision_note, old_values, created_at, decided_at,
+       product:products(name, price_pkr),
        requester:profiles!product_deletion_requests_requested_by_fkey(full_name),
        decider:profiles!product_deletion_requests_decided_by_fkey(full_name)`,
       { count: "exact" },
@@ -81,10 +80,6 @@ export default async function RequestsPage({ searchParams }: PageProps<"/items/r
               {changes(request).map((line) => (
                 <p key={line as string}>{line}</p>
               ))}
-              {request.new_image_url && (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={request.new_image_url} alt="Requested" className="mt-1 size-12 rounded-md object-cover" />
-              )}
             </td>
             <td className="max-w-xs">{request.reason}</td>
             <td className="whitespace-nowrap">

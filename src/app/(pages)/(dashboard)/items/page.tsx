@@ -17,7 +17,7 @@ export default async function ItemsPage({ searchParams }: PageProps<"/items">) {
   const showDeleted = profile.role === Role.SUPER_ADMIN && params.deleted === "on";
 
   const supabase = await createClient();
-  let query = supabase.from("products").select("id, name, price_pkr, image_url, is_active, deleted_at, updated_at", { count: "exact" })
+  let query = supabase.from("products").select("id, name, price_pkr, is_active, deleted_at, updated_at", { count: "exact" })
     .order("name")
     .range(...pageRange(page));
   if (q) query = query.ilike("name", `%${q}%`);
