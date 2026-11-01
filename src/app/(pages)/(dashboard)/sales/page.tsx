@@ -1,3 +1,4 @@
+import AutoRefresh from "@/components/AutoRefresh";
 import Button from "@/components/Button";
 import Pagination from "@/components/Pagination";
 import Table from "@/components/Table";
@@ -43,6 +44,7 @@ export default async function SalesPage({ searchParams }: PageProps<"/sales">) {
 
   return (
     <>
+      <AutoRefresh />
       <h1 className="text-2xl font-bold">Sales</h1>
 
       <form className="flex flex-wrap items-center gap-3">
