@@ -105,7 +105,8 @@ export type DecisionValues = z.infer<typeof decisionSchema>;
 // ---------- Sales & clients ----------
 
 export const salesFilterSchema = z.object({
-  period: z.enum(SalesPeriod).catch(SalesPeriod.DAY),
+  // "" = All; a missing or unknown period falls back to Day
+  period: z.enum(SalesPeriod).or(z.literal("")).catch(SalesPeriod.DAY),
   date: z.iso
     .date()
     .refine((date) => date <= karachiToday(), "Date cannot be in the future")
@@ -124,7 +125,7 @@ export type SaleRow = {
   customer_name: string | null;
   total_items: number;
   total_pkr: number;
-  sale_items?: { product_name: string; qty: number; line_total_pkr: number }[];
+  sale_items?: { product_name: string; unit_price_pkr?: number; qty: number; line_total_pkr: number }[];
 };
 
 export type Client = {
