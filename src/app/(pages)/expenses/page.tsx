@@ -24,7 +24,7 @@ export default async function ExpensesPage({ searchParams }: PageProps<"/expense
   const supabase = await createClient();
   let query = supabase
     .from("expenses")
-    .select("id, title, amount_pkr, spent_on, created_by_name, created_at", { count: "exact" })
+    .select("id, title, amount_pkr, spent_on, receipt_path, created_by_name, created_at", { count: "exact" })
     .is("deleted_at", null)
     .order("created_at", { ascending: false })
     .range(...pageRange(page));

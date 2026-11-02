@@ -92,6 +92,7 @@ export type Expense = {
   title: string;
   amount_pkr: number;
   spent_on: string;
+  receipt_path: string | null;
   created_by_name: string;
   created_at: string;
 };
@@ -128,8 +129,21 @@ export const expenseSchema = z.object({
 
 export type ExpenseValues = z.infer<typeof expenseSchema>;
 
+// Optional receipt photo; z.custom because FileList only exists in the browser
+const RECEIPT_TYPES = ["image/jpeg", "image/png", "image/webp"];
+const receiptField = z
+  .custom<FileList>()
+  .optional()
+  .refine((files) => !files?.[0] || RECEIPT_TYPES.includes(files[0].type), "Upload a JPG, PNG or WEBP image")
+  .refine((files) => !files?.[0] || files[0].size <= 5 * 1024 * 1024, "Max 5 MB");
+
 // Used by the form: Admin edits must give a reason
-export const expenseFormSchema = (requireReason: boolean) => expenseSchema.extend({ reason: reasonField(requireReason) });
+export const expenseFormSchema = (requireReason: boolean) => expenseSchema.extend({ reason: reasonField(requireReason), receipt: receiptField });
+
+export type ExpenseFormValues = z.infer<ReturnType<typeof expenseFormSchema>>;
+
+// Path inside the expense-receipts bucket, as the form uploads it: "<uuid>.<ext>"
+export const receiptPathSchema = z.string().regex(/^[\w-]+\.(jpg|jpeg|png|webp)$/).nullable();
 
 // ---------- Sales & clients ----------
 

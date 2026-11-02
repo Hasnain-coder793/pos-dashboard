@@ -4,18 +4,19 @@ import { revalidatePath } from "next/cache";
 import { ExpenseRequestType, Role } from "@/enums";
 import { getCaller } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
-import { decisionSchema, deleteSchema, expenseSchema, type ActionResult, type DecisionValues, type DeleteValues, type ExpenseValues } from "@/types";
+import { decisionSchema, deleteSchema, expenseSchema, receiptPathSchema, type ActionResult, type DecisionValues, type DeleteValues, type ExpenseValues } from "@/types";
 import { toErrorMessage } from "@/utils/errors";
 
-// Admin and Super Admin add directly; the database records who added it
-export async function addExpense(values: ExpenseValues): Promise<ActionResult> {
+// Admin and Super Admin add directly; the database records who added it. The receipt is already uploaded by the form.
+export async function addExpense(values: ExpenseValues, receiptPath: string | null = null): Promise<ActionResult> {
   const parsed = expenseSchema.safeParse(values);
-  if (!parsed.success) return { ok: false, error: "Check the form fields" };
+  const receipt = receiptPathSchema.safeParse(receiptPath);
+  if (!parsed.success || !receipt.success) return { ok: false, error: "Check the form fields" };
   if (!(await getCaller())) return { ok: false, error: "You do not have permission to do this" };
 
   const { title, amount_pkr, spent_on } = parsed.data;
   const supabase = await createClient();
-  const { error } = await supabase.from("expenses").insert({ title, amount_pkr, spent_on });
+  const { error } = await supabase.from("expenses").insert({ title, amount_pkr, spent_on, receipt_path: receipt.data });
   if (error) return { ok: false, error: toErrorMessage(error) };
 
   revalidatePath("/expenses");
