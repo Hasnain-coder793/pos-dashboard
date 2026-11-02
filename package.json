@@ -11,6 +11,7 @@
     "seed-sales": "node --env-file=.env.local scripts/seed-sales.mjs",
     "unseed-sales": "node --env-file=.env.local scripts/unseed-sales.mjs",
     "clean-db": "node --env-file=.env.local scripts/clean-db.mjs",
+    "delete-users": "npm run clean-db && node --env-file=.env.local scripts/delete-users.mjs",
     "test:integration": "vitest run"
   },
   "dependencies": {
