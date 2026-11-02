@@ -12,11 +12,13 @@ const denied = { ok: false, error: "You do not have permission to do this" } as 
 
 const isSuperAdmin = async () => (await getCaller())?.role === Role.SUPER_ADMIN;
 
-// Emails live in auth.users, which only the service-role client can read
+// Emails live in auth.users; the user_emails() database function reads them in one quick query
 export async function getUserEmails(): Promise<Record<string, string>> {
   if (!(await isSuperAdmin())) return {};
-  const { data } = await createAdminClient().auth.admin.listUsers({ perPage: 1000 });
-  return Object.fromEntries((data?.users ?? []).map((user) => [user.id, user.email ?? ""]));
+  const supabase = await createClient();
+  const { data } = await supabase.rpc("user_emails");
+  const users = (data ?? []) as { id: string; email: string }[];
+  return Object.fromEntries(users.map((user) => [user.id, user.email ?? ""]));
 }
 
 export async function createUser(values: CreateUserValues): Promise<ActionResult> {
