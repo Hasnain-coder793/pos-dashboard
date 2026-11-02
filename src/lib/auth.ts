@@ -8,12 +8,11 @@ import type { Profile } from "@/types";
 // The caller's profile, read fresh from the database once per request
 export const getProfile = cache(async (): Promise<Profile | null> => {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return null;
+  // Local JWT check instead of getUser(), which calls the Auth server on every navigation
+  const { data: auth } = await supabase.auth.getClaims();
+  if (!auth?.claims) return null;
 
-  const { data } = await supabase.from("profiles").select("*").eq("id", user.id).single();
+  const { data } = await supabase.from("profiles").select("*").eq("id", auth.claims.sub).single();
   return data;
 });
 

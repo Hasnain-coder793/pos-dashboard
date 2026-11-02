@@ -10,6 +10,7 @@
     "create-super-admin": "node --env-file=.env.local scripts/create-super-admin.mjs",
     "seed-sales": "node --env-file=.env.local scripts/seed-sales.mjs",
     "unseed-sales": "node --env-file=.env.local scripts/unseed-sales.mjs",
+    "clean-db": "node --env-file=.env.local scripts/clean-db.mjs",
     "test:integration": "vitest run"
   },
   "dependencies": {
