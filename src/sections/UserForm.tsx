@@ -39,7 +39,7 @@ export default function UserForm({ user, onClose }: UserFormProps) {
   const fields = [
     { name: "full_name", label: "Full name", type: "text", show: true },
     { name: "email", label: "Email", type: "email", show: !user },
-    { name: "password", label: "Temporary password", type: "password", show: !user },
+    { name: "password", label: "Password", type: "password", show: !user },
   ] as const;
 
   const role = useWatch({ control, name: "role" });

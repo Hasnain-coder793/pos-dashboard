@@ -24,7 +24,7 @@ export default function Sidebar({ profile }: SidebarProps) {
   return (
     <aside className="flex w-full flex-col gap-6 bg-linear-to-b from-primary to-slate-800 p-4 text-secondary md:fixed md:inset-y-0 md:left-0 md:w-60 md:overflow-y-auto">
       <div>
-        <p className="text-lg font-bold">POS Dashboard</p>
+        <p className="text-lg font-bold">Chai Charcha Panel</p>
         <p className="text-sm text-blue-100">
           {profile.full_name} · {profile.role === Role.SUPER_ADMIN ? "Super Admin" : "Admin"}
         </p>
