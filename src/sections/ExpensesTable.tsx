@@ -29,7 +29,7 @@ export default function ExpensesTable({ expenses, pendingIds, role }: ExpensesTa
 
       <Notice message={notice} />
 
-      <Table headers={["Date", "Title", "Amount", "Added by", "Added at", "Status", ""]} empty={!expenses.length}>
+      <Table headers={["Date", "Title", "Amount", "Receipt", "Added by", "Added at", "Status", ""]} empty={!expenses.length}>
         {expenses.map((expense) => {
           const pending = pendingIds.includes(expense.id);
 
@@ -38,6 +38,15 @@ export default function ExpensesTable({ expenses, pendingIds, role }: ExpensesTa
               <td className="whitespace-nowrap">{formatDate(expense.spent_on)}</td>
               <td className="font-semibold">{expense.title}</td>
               <td className="whitespace-nowrap">{formatPKR(expense.amount_pkr)}</td>
+              <td>
+                {expense.receipt_path ? (
+                  <a href={`/api/receipts/${expense.receipt_path}`} target="_blank" className="font-semibold text-primary hover:underline">
+                    View
+                  </a>
+                ) : (
+                  "—"
+                )}
+              </td>
               <td>{expense.created_by_name}</td>
               <td className="whitespace-nowrap">{formatDateTime(expense.created_at)}</td>
               <td>{pending ? <Badge>Pending change</Badge> : <Badge variant="solid">Added</Badge>}</td>

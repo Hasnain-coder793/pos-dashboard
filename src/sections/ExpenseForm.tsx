@@ -9,7 +9,8 @@ import ErrorBanner from "@/components/ErrorBanner";
 import Input from "@/components/Input";
 import Modal from "@/components/Modal";
 import { Role } from "@/enums";
-import { expenseFormSchema, type ExpenseFormProps, type ExpenseValues } from "@/types";
+import { createClient } from "@/lib/supabase/client";
+import { expenseFormSchema, type ExpenseFormProps, type ExpenseFormValues } from "@/types";
 import { karachiToday } from "@/utils/date-range";
 
 export default function ExpenseForm({ expense, role, onClose, onDone }: ExpenseFormProps) {
@@ -19,7 +20,7 @@ export default function ExpenseForm({ expense, role, onClose, onDone }: ExpenseF
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm<ExpenseValues>({
+  } = useForm<ExpenseFormValues>({
     resolver: zodResolver(expenseFormSchema(isRequest)),
     defaultValues: { title: expense?.title ?? "", amount_pkr: expense?.amount_pkr, spent_on: expense?.spent_on ?? karachiToday(), reason: "" },
   });
@@ -28,12 +29,24 @@ export default function ExpenseForm({ expense, role, onClose, onDone }: ExpenseF
     { name: "title", label: "Title", type: "text", show: true },
     { name: "amount_pkr", label: "Amount (PKR)", type: "number", show: true },
     { name: "spent_on", label: "Date", type: "date", show: true },
+    { name: "receipt", label: "Receipt (optional)", type: "file", show: !expense },
     { name: "reason", label: "Reason for change", type: "text", show: isRequest },
   ] as const;
 
-  async function onSubmit(values: ExpenseValues) {
+  // The receipt goes straight to Storage (server actions cap uploads at 1 MB); the expense saves only its path
+  async function uploadReceipt(file: File) {
+    const path = `${crypto.randomUUID()}.${file.type.split("/")[1]}`;
+    const { error } = await createClient().storage.from("expense-receipts").upload(path, file);
+    return error ? undefined : path;
+  }
+
+  async function onSubmit({ receipt, ...values }: ExpenseFormValues) {
     setServerError("");
-    const result = expense ? await updateExpense(expense.id, values) : await addExpense(values);
+    const file = receipt?.[0];
+    const receiptPath = file ? await uploadReceipt(file) : null;
+    if (receiptPath === undefined) return setServerError("Could not upload the receipt. Please try again.");
+
+    const result = expense ? await updateExpense(expense.id, values) : await addExpense(values, receiptPath);
     if (!result.ok) return setServerError(result.error);
     onDone(isRequest ? "Change request sent to Super Admin" : expense ? "Expense updated" : "Expense added");
   }
@@ -49,6 +62,7 @@ export default function ExpenseForm({ expense, role, onClose, onDone }: ExpenseF
               label={field.label}
               type={field.type}
               max={field.type === "date" ? karachiToday() : undefined}
+              accept={field.type === "file" ? "image/jpeg,image/png,image/webp" : undefined}
               error={errors[field.name]?.message}
               {...register(field.name, { valueAsNumber: field.type === "number" })}
             />

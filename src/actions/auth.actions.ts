@@ -7,7 +7,7 @@ import { loginSchema, type ActionResult, type LoginValues } from "@/types";
 
 export async function login(values: LoginValues): Promise<ActionResult> {
   const parsed = loginSchema.safeParse(values);
-  if (!parsed.success) return { ok: false, error: "Enter a valid email and password" };
+  if (!parsed.success) return { ok: false, error: "Enter a valid email and " };
 
   const supabase = await createClient();
   const { data, error } = await supabase.auth.signInWithPassword(parsed.data);
