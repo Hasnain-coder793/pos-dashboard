@@ -1,4 +1,5 @@
 import Link from "next/link";
+import AutoRefresh from "@/components/AutoRefresh";
 import Badge from "@/components/Badge";
 import Pagination from "@/components/Pagination";
 import Table from "@/components/Table";
@@ -49,6 +50,7 @@ export default async function RequestsPage({ searchParams }: PageProps<"/items/r
 
   return (
     <>
+      <AutoRefresh />
       <h1 className="text-2xl font-bold">Items</h1>
       <ItemsTabs active="/items/requests" />
 

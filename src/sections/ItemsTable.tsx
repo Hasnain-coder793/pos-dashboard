@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import { Toaster, toast } from "sonner";
 import Badge from "@/components/Badge";
 import Button from "@/components/Button";
-import Notice from "@/components/Notice";
 import Table from "@/components/Table";
 import type { ItemsTableProps, Product } from "@/types";
 import { formatDateTime, formatPKR } from "@/utils/format";
@@ -14,11 +14,10 @@ type Dialog = { type: "add" } | { type: "edit" | "delete"; product: Product } | 
 
 export default function ItemsTable({ products, pendingIds, role }: ItemsTableProps) {
   const [dialog, setDialog] = useState<Dialog>(null);
-  const [notice, setNotice] = useState("");
   const close = () => setDialog(null);
   const done = (message: string) => {
     setDialog(null);
-    setNotice(message);
+    toast.success(message);
   };
 
   return (
@@ -27,7 +26,7 @@ export default function ItemsTable({ products, pendingIds, role }: ItemsTablePro
         + Add item
       </Button>
 
-      <Notice message={notice} />
+      <Toaster position="top-center" richColors />
 
       <Table headers={["Name", "Price", "Status", "Updated", ""]} empty={!products.length}>
         {products.map((product) => {
