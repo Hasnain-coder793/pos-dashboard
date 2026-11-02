@@ -9,3 +9,5 @@
 * create a (pages) create page inside the this in the app
 * use hover for the buttons 
 * put all the migrations into the supabse migrations
+* never push or commit any changes by yourself any git operation untill i asked for it
+* 
